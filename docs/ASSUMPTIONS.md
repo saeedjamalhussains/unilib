@@ -8,3 +8,7 @@
   registration route is provided.
 - Role-specific dashboard behavior and access policies will be added with the
   RBAC and domain phases.
+- Until each domain app/model exists, `seed_roles` registers its matrix
+  permissions against that app's `rolecapability` content type. This lets
+  permissions and groups be seeded from the canonical matrix in Phase 2; later
+  domain model permissions can use the same app label/codenames.

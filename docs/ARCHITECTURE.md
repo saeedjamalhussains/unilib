@@ -14,3 +14,19 @@ production modules. SQLite is the default development database. Set
 Phase 1 establishes the project, custom user, auth entry points, base template,
 and shared permission mixin. Domain services, role seeding, and audit logging
 are introduced in their corresponding implementation phases.
+
+## RBAC and audit core
+
+The canonical role/capability mapping is
+[`apps/accounts/role_matrix.py`](../apps/accounts/role_matrix.py); use
+`python manage.py render_rbac_matrix` to regenerate its documentation and
+`python manage.py seed_roles` to reconcile the Django groups. Permissions for
+domain apps that have not been introduced yet are registered under a temporary
+`rolecapability` content type for that app label and are reused by the seeder.
+
+`LibraryPermissionRequiredMixin` and `library_permission_required` return a
+login redirect for anonymous requests and a 403 for authenticated users without
+permission; authenticated denials are audited. The audit API writes append-only
+events, captures request IP/user-agent metadata through middleware, and records
+authentication signals. The Django admin site separately limits entry to
+superusers and members of the `Administrator` group.

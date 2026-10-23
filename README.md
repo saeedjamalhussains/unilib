@@ -20,6 +20,14 @@ The current foundation has login, logout, password reset/change pages, and the
 custom `accounts.User` model. There are no demo credentials yet because account
 creation is intentionally staff-controlled.
 
+Seed the four role groups and their permissions, then regenerate the matrix
+documentation when changing the canonical role data:
+
+```sh
+python manage.py seed_roles
+python manage.py render_rbac_matrix
+```
+
 ## Configuration
 
 Settings default to `config.settings.dev`. Set `DJANGO_SETTINGS_MODULE` to
