@@ -1,0 +1,13 @@
+:focus-visible {
+  outline: 3px solid #f0ad4e;
+  outline-offset: 2px;
+}
+
+form p label {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+form p input {
+  max-width: 100%;
+}
