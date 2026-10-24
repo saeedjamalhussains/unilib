@@ -1,55 +1,78 @@
 # Architecture
 
-The application uses Django's request/response stack and server-rendered templates.
-The `accounts` app owns the custom authentication user model. The `core` app
-contains shared views and access-control mixins. Domain apps call their own
-services from thin views; persistence is through the Django ORM.
+The system is a server-rendered Django application. Requests pass through
+authentication, server-side permission checks, ownership-scoped querysets, and
+audit middleware before domain services use the Django ORM. Django templates,
+vendored Bootstrap, and small progressive-enhancement assets form the browser
+layer. SQLite is used by default; `DATABASE_URL` configures PostgreSQL.
 
-Settings are split into a shared `base.py` and explicit development and
-production modules. SQLite is the default development database. Set
-`DATABASE_URL` to a PostgreSQL URL to configure PostgreSQL.
+## Application boundaries
 
-## Foundation status
+- `accounts`: custom user, login/password workflows, role administration, and
+  account lifecycle services.
+- `core`: shared permission mixins/decorators, dashboards, and common UI.
+- `audit`: request context, append-only audit records, authentication signals,
+  restricted admin registration, and audit viewer.
+- `catalog` and `inventory`: bibliographic records and physical copies.
+- `membership`: member profiles, ownership-scoped access, library policies,
+  staff membership workflows, and eligibility settings.
+- `circulation`: loan model and atomic issue, return, and renewal services.
+- `reservations`: FIFO reservations, timed holds, notifications, and the
+  idempotent `expire_reservations` command.
+- `fines`: overdue fine records, partial payments, outstanding balances, and
+  administrator waivers.
+- `reports`: ORM-based inventory, circulation, loan, title popularity, and
+  fine reports with formula-neutralized CSV export.
 
-Phase 1 establishes the project, custom user, auth entry points, and base
-template. Phase 2 adds role seeding and audit logging. Phase 3 adds secure
-account and role administration. Phase 4 adds catalog and physical inventory
-services and server-rendered management views. Membership and circulation
-services are added in later phases.
+## Request security and RBAC
 
-## RBAC and audit core
+`apps/accounts/role_matrix.py` is the canonical matrix used by the role seeder,
+generated permission documentation, and matrix tests. The seeder reconciles
+each Django group exactly. Permissions for a domain without a concrete
+permission-bearing model (currently reports) use an app-labelled `rolecapability`
+content type; model-backed capabilities use their actual model content types.
 
-The canonical role/capability mapping is
-[`apps/accounts/role_matrix.py`](../apps/accounts/role_matrix.py); use
-`python manage.py render_rbac_matrix` to regenerate its documentation and
-`python manage.py seed_roles` to reconcile the Django groups. Permissions for
-domain apps that have not been introduced yet are registered under a temporary
-`rolecapability` content type for that app label and are reused by the seeder.
+`LibraryPermissionRequiredMixin` and `library_permission_required` redirect
+anonymous requests to login and return an audited 403 to authenticated users
+without permission. Mixed staff/member endpoints perform explicit permission
+checks and identify their required permissions for the deny-by-default URL
+test. Ownership-sensitive `Loan`, `Reservation`, `Fine`, and `MemberProfile`
+querysets expose `owned_by(user)`; member-facing object access is always scoped
+before lookup.
 
-`LibraryPermissionRequiredMixin` and `library_permission_required` return a
-login redirect for anonymous requests and a 403 for authenticated users without
-permission; authenticated denials are audited. The audit API writes append-only
-events, captures request IP/user-agent metadata through middleware, and records
-authentication signals. The Django admin site separately limits entry to
-superusers and members of the `Administrator` group.
+Account role assignment is centralized in `accounts.services.assign_role`.
+Domain services own validation, atomic persistence, row locking where
+concurrency matters, and audit events. State-changing views accept POST only
+and rely on Django CSRF middleware. User-controlled output uses Django's
+autoescaping.
 
-## Role administration
+## Audit and operational behavior
 
-The `/manage/users/` interface uses Django's `accounts.manage_users` permission
-for administrators. Librarians use `membership.manage_members` only to create,
-edit, list, and deactivate Faculty and Student accounts; they cannot edit
-privileged accounts or assign roles to existing accounts. `accounts.services`
-is the enforcement boundary for initial role assignment, account changes,
-activation, deactivation, and deletion. Role updates replace any other library
-role group, and final-active-administrator operations are rejected
-transactionally.
+`audit.log()` is the common append-only audit API. Auth signals capture login,
+failed login, and logout; services audit lifecycle and domain changes within
+their database transaction. Middleware captures request IP and user agent and
+records protected-endpoint 403s. The audit model refuses updates/deletes and is
+read-only in the restricted Django admin.
 
-## Catalog and inventory
+The login throttle tracks failures by normalized username and remote address in
+Django's configured cache. The default development cache is local memory;
+production deployments with multiple workers should configure a shared cache.
+The inactivity session timeout is 30 minutes.
 
-`catalog` owns bibliographic titles and their authors, publishers, and
-categories. Search and detail views require `catalog.view_book`; catalog
-maintenance requires `catalog.manage_catalog`, while title deletion requires
-`catalog.delete_book`. `inventory` owns `BookCopy` records; changes go through
-its service layer and require `inventory.manage_copies`. Catalog and copy
-mutations write audit events from their services. A title with copies cannot
-be deleted, and copy-to-book references use `PROTECT`.
+Reservation-ready email is routed through Django's configured email backend
+(console backend in development) and dispatched after the hold transaction
+commits. Schedule `python manage.py expire_reservations` periodically in
+production; repeated runs are safe.
+
+## Configuration and data
+
+`django-environ` loads environment variables and an optional project-root
+`.env`. `config.settings.dev` selects local development behavior; production
+requires a secret, host allow-list, and configured database. Migrations seed
+default student and faculty policies. Run `seed_roles` after migrations; the
+development-only `seed_demo_data` command is repeatable and never resets
+existing demo-account passwords.
+
+All domain data is accessed via the Django ORM. PostgreSQL row locks protect
+checkout/payment/hold mutations; SQLite remains suitable for development and
+automated functional tests.

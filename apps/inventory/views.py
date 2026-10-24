@@ -29,9 +29,7 @@ class CopyListView(CopyManagementRequiredMixin, ListView):
         return context
 
     def get_queryset(self):
-        queryset = BookCopy.objects.select_related("book").order_by(
-            "accession_number", "pk"
-        )
+        queryset = BookCopy.objects.select_related("book").order_by("accession_number", "pk")
         search = self.request.GET.get("q", "").strip()
         status = self.request.GET.get("status", "").strip()
         if search:
@@ -100,6 +98,12 @@ class CopyStatusView(CopyManagementRequiredMixin, View):
         if not form.is_valid():
             messages.error(request, "Select a valid copy status.")
             return redirect("copy_list")
-        copy = change_copy_status(request.user, self.get_copy(), form.cleaned_data["status"])
-        messages.success(request, f"Copy {copy.accession_number} is now {copy.get_status_display()}.")
+        try:
+            copy = change_copy_status(request.user, self.get_copy(), form.cleaned_data["status"])
+        except ValidationError as exc:
+            messages.error(request, "; ".join(exc.messages))
+            return redirect("copy_list")
+        messages.success(
+            request, f"Copy {copy.accession_number} is now {copy.get_status_display()}."
+        )
         return redirect("copy_list")

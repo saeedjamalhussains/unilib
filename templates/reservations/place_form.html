@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Place reservation | University Library{% endblock %}
+{% block content %}
+<h1>Place a reservation</h1><form method="post" class="vstack gap-3">{% csrf_token %}
+<label class="form-label" for="book">Book title</label><select class="form-select" id="book" name="book" required>{% for book in books %}<option value="{{ book.pk }}">{{ book.title }} ({{ book.isbn }})</option>{% endfor %}</select>
+<button class="btn btn-primary">Join reservation queue</button></form>
+{% endblock %}

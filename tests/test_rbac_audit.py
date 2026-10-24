@@ -260,7 +260,9 @@ class DenyByDefaultUrlTests(TestCase):
                     view_class, (LoginRequiredMixin, LibraryPermissionRequiredMixin)
                 ):
                     continue
-                if hasattr(callback, "login_url"):
+                if view_class is not None and getattr(view_class, "permission_required", None):
+                    continue
+                if hasattr(callback, "login_url") or getattr(callback, "permission_required", None):
                     continue
                 unresolved.append(f"{namespace}:{name}")
 

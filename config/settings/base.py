@@ -1,12 +1,14 @@
-import os
 from pathlib import Path
-from urllib.parse import urlparse
+
+import environ
 
 BASE_DIR = Path(__file__).resolve().parents[2]
+env = environ.Env(DEBUG=(bool, False))
+environ.Env.read_env(BASE_DIR / ".env")
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "development-only-change-me")
-DEBUG = False
-ALLOWED_HOSTS = []
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="development-only-change-me")
+DEBUG = env.bool("DJANGO_DEBUG", default=False)
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -20,6 +22,11 @@ INSTALLED_APPS = [
     "apps.audit.apps.AuditConfig",
     "apps.catalog.apps.CatalogConfig",
     "apps.inventory.apps.InventoryConfig",
+    "apps.membership.apps.MembershipConfig",
+    "apps.circulation.apps.CirculationConfig",
+    "apps.reservations.apps.ReservationsConfig",
+    "apps.fines.apps.FinesConfig",
+    "apps.reports.apps.ReportsConfig",
 ]
 
 MIDDLEWARE = [
@@ -54,25 +61,16 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "")
-if DATABASE_URL.startswith(("postgres://", "postgresql://")):
-    parsed_database_url = urlparse(DATABASE_URL)
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": parsed_database_url.path.lstrip("/"),
-            "USER": parsed_database_url.username or "",
-            "PASSWORD": parsed_database_url.password or "",
-            "HOST": parsed_database_url.hostname or "",
-            "PORT": parsed_database_url.port or "",
-            "CONN_MAX_AGE": 60,
-        }
-    }
+DATABASE_URL = env("DATABASE_URL", default="")
+if DATABASE_URL:
+    DATABASES = {"default": env.db("DATABASE_URL")}
+    if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+        DATABASES["default"]["CONN_MAX_AGE"] = 60
 else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": os.environ.get("SQLITE_PATH", str(BASE_DIR / "db.sqlite3")),
+            "NAME": env("SQLITE_PATH", default=str(BASE_DIR / "db.sqlite3")),
         }
     }
 
@@ -92,9 +90,13 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = os.environ.get("TIME_ZONE", "UTC")
+TIME_ZONE = env("TIME_ZONE", default="UTC")
 USE_I18N = True
 USE_TZ = True
+EMAIL_BACKEND = env(
+    "DJANGO_EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"

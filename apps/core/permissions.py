@@ -27,6 +27,7 @@ def library_permission_required(perm):
                 raise PermissionDenied
             return view_func(request, *args, **kwargs)
 
+        wrapped.permission_required = (perm,) if isinstance(perm, str) else tuple(perm)
         return wrapped
 
     return decorator

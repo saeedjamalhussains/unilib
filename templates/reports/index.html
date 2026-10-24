@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Reports | University Library{% endblock %}
+{% block content %}
+<h1>Library reports</h1>
+<form method="get" class="row g-3 mb-4">
+  <div class="col-md-4"><label class="form-label" for="report">Report</label><select class="form-select" id="report" name="report">{% for key, label in reports.items %}<option value="{{ key }}"{% if key == report_name %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><label class="form-label" for="start">From date</label><input class="form-control" id="start" type="date" name="start" value="{{ start }}"></div>
+  <div class="col-md-3"><label class="form-label" for="end">To date</label><input class="form-control" id="end" type="date" name="end" value="{{ end }}"></div>
+  <div class="col-md-2"><label class="form-label" for="category">Category</label><input class="form-control" id="category" name="category" value="{{ category }}"></div>
+  <div class="col-12"><button class="btn btn-primary">Run report</button> <button class="btn btn-outline-secondary" name="format" value="csv">Export CSV</button></div>
+</form>
+{% if errors %}<div class="alert alert-danger" role="alert"><ul class="mb-0">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
+<div class="table-responsive"><table class="table table-striped"><thead><tr>{% for column in columns %}<th scope="col">{{ column|capfirst }}</th>{% endfor %}</tr></thead><tbody>
+{% for row in rows %}<tr>{% for value in row.values %}<td>{{ value }}</td>{% endfor %}</tr>{% empty %}<tr><td>No report rows are available.</td></tr>{% endfor %}
+</tbody></table></div>
+{% include "partials/pagination.html" %}
+{% endblock %}

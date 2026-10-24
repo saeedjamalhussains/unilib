@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Library policies | University Library{% endblock %}
+{% block content %}
+<h1>Library policies</h1><p><a class="btn btn-primary" href="{% url 'policy_create' %}">Add policy</a></p>
+<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Member type</th><th>Loan limit</th><th>Loan days</th><th>Renewals</th><th>Fine/day</th><th></th></tr></thead>
+<tbody>{% for policy in object_list %}<tr><td>{{ policy.get_member_type_display }}</td><td>{{ policy.max_active_loans }}</td><td>{{ policy.loan_days }}</td><td>{{ policy.max_renewals }}</td><td>{{ policy.fine_per_day }}</td><td><a href="{% url 'policy_edit' policy.pk %}">Edit</a></td></tr>{% empty %}<tr><td colspan="6">No policies configured.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

@@ -55,6 +55,19 @@ class Command(BaseCommand):
             ("catalog", "delete_book"): "book",
             ("inventory", "manage_copies"): "bookcopy",
             ("audit", "view_auditlog"): "auditlog",
+            ("membership", "manage_members"): "memberprofile",
+            ("membership", "view_all_members"): "memberprofile",
+            ("membership", "manage_policy"): "librarypolicy",
+            ("circulation", "process_circulation"): "loan",
+            ("circulation", "view_all_loans"): "loan",
+            ("circulation", "view_own_loans"): "loan",
+            ("circulation", "renew_own_loan"): "loan",
+            ("reservations", "place_reservation"): "reservation",
+            ("reservations", "manage_reservations"): "reservation",
+            ("fines", "view_own_fines"): "fine",
+            ("fines", "manage_fines"): "fine",
+            ("fines", "waive_fine"): "fine",
+            ("reports", "view_reports"): "report",
         }
         model_name = model_names.get((app_label, codename))
         if model_name is None:

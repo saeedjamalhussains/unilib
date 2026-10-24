@@ -1,7 +1,11 @@
+import hashlib
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import PasswordChangeDoneView, PasswordChangeView
+from django.contrib.auth.views import LoginView, PasswordChangeDoneView, PasswordChangeView
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -20,6 +24,48 @@ from apps.accounts.services import (
     update_account,
 )
 from apps.audit.api import log
+
+
+class ThrottledLoginView(LoginView):
+    failure_limit = 5
+    lockout_seconds = 900
+
+    def attempt_key(self):
+        identity = "|".join(
+            (
+                self.request.META.get("REMOTE_ADDR", ""),
+                self.request.POST.get("username", "").strip().lower(),
+            )
+        )
+        digest = hashlib.sha256(identity.encode()).hexdigest()
+        return f"library-login-failures:{digest}"
+
+    def post(self, request, *args, **kwargs):
+        self.request = request
+        key = self.attempt_key()
+        if cache.get(key, 0) >= self.failure_limit:
+            log(
+                request,
+                "auth.login_locked",
+                outcome="denied",
+                username=request.POST.get("username", "")[:150],
+            )
+            form = AuthenticationForm(request, data=request.POST)
+            form.add_error(None, "Too many failed login attempts. Try again in 15 minutes.")
+            return self.render_to_response(self.get_context_data(form=form), status=429)
+        return super().post(request, *args, **kwargs)
+
+    def form_invalid(self, form):
+        key = self.attempt_key()
+        try:
+            cache.incr(key)
+        except ValueError:
+            cache.set(key, 1, self.lockout_seconds)
+        return super().form_invalid(form)
+
+    def form_valid(self, form):
+        cache.delete(self.attempt_key())
+        return super().form_valid(form)
 
 
 class AuditedPasswordChangeView(LoginRequiredMixin, PasswordChangeView):

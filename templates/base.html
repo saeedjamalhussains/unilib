@@ -14,10 +14,22 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary" aria-label="Main navigation">
       <div class="container">
         <a class="navbar-brand" href="{% url 'home' %}">University Library</a>
-        <div class="ms-auto">
+        <div class="ms-auto d-flex flex-wrap gap-2 justify-content-end">
           {% if user.is_authenticated %}
             {% if perms.catalog.view_book %}<a class="btn btn-outline-light me-2" href="{% url 'catalog:book_list' %}">Catalog</a>{% endif %}
             {% if perms.inventory.manage_copies %}<a class="btn btn-outline-light me-2" href="{% url 'copy_list' %}">Inventory</a>{% endif %}
+            {% if perms.membership.view_all_members %}<a class="btn btn-outline-light me-2" href="{% url 'member_list' %}">Members</a>{% endif %}
+            {% if perms.membership.manage_policy %}<a class="btn btn-outline-light me-2" href="{% url 'policy_list' %}">Policies</a>{% endif %}
+            {% if perms.audit.view_auditlog %}<a class="btn btn-outline-light me-2" href="{% url 'audit_list' %}">Audit</a>{% endif %}
+            {% if perms.circulation.view_all_loans %}<a class="btn btn-outline-light me-2" href="{% url 'all_loans' %}">All loans</a>{% endif %}
+            {% if perms.circulation.view_own_loans %}<a class="btn btn-outline-light me-2" href="{% url 'my_loans' %}">My loans</a>{% endif %}
+            {% if perms.reservations.manage_reservations %}<a class="btn btn-outline-light me-2" href="{% url 'reservation_list' %}">Reservations</a>{% endif %}
+            {% if perms.reservations.place_reservation %}<a class="btn btn-outline-light me-2" href="{% url 'my_reservations' %}">My reservations</a>{% endif %}
+            {% if perms.fines.manage_fines %}<a class="btn btn-outline-light me-2" href="{% url 'fine_list' %}">Fines</a>{% endif %}
+            {% if perms.fines.view_own_fines %}<a class="btn btn-outline-light me-2" href="{% url 'my_fines' %}">My fines</a>{% endif %}
+            {% if perms.reports.view_reports %}<a class="btn btn-outline-light me-2" href="{% url 'report_index' %}">Reports</a>{% endif %}
+            <a class="btn btn-outline-light me-2" href="{% url 'my_profile' %}">My profile</a>
+            <a class="btn btn-outline-light me-2" href="{% url 'password_change' %}">Change password</a>
             {% if perms.accounts.manage_users or perms.membership.manage_members %}
               <a class="btn btn-outline-light me-2" href="{% url 'manage_user_list' %}">Manage users</a>
             {% endif %}

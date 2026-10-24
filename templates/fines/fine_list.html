@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Fines | University Library{% endblock %}
+{% block content %}
+<h1>{% if perms.fines.manage_fines %}All fines{% else %}My fines{% endif %}</h1>
+<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Member</th><th>Book</th><th>Reason</th><th>Amount</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+<tbody>{% for fine in fines %}<tr><td>{{ fine.member.university_id }}</td><td>{{ fine.loan.copy.book.title }}</td><td>{{ fine.get_reason_display }}</td><td>{{ fine.amount }}</td><td>{{ fine.balance }}</td><td>{{ fine.get_status_display }}</td>
+<td>{% if perms.fines.manage_fines and fine.status == "outstanding" %}<a href="{% url 'fine_payment' fine.pk %}">Record payment</a>{% endif %}{% if perms.fines.waive_fine and fine.status == "outstanding" %} <a href="{% url 'fine_waive' fine.pk %}">Waive</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="7">No fines found.</td></tr>{% endfor %}</tbody></table></div>
+{% include "partials/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Audit log | University Library{% endblock %}
+{% block content %}
+<h1>Audit log</h1><form method="get" class="row g-2 mb-3">
+<div class="col-md-5"><label class="form-label" for="audit-query">Actor, target, or ID</label><input class="form-control" id="audit-query" name="q" value="{{ request.GET.q }}"></div>
+<div class="col-md-4"><label class="form-label" for="action">Action</label><input class="form-control" id="action" name="action" value="{{ request.GET.action }}"></div>
+<div class="col-md-2"><label class="form-label" for="outcome">Outcome</label><select class="form-select" id="outcome" name="outcome"><option value="">All</option><option value="success"{% if request.GET.outcome == "success" %} selected{% endif %}>Success</option><option value="denied"{% if request.GET.outcome == "denied" %} selected{% endif %}>Denied</option><option value="failed"{% if request.GET.outcome == "failed" %} selected{% endif %}>Failed</option></select></div>
+<div class="col-md-1 align-self-end"><button class="btn btn-primary">Filter</button></div></form>
+<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Timestamp</th><th>Actor</th><th>Action</th><th>Target</th><th>Outcome</th><th>IP</th></tr></thead>
+<tbody>{% for event in events %}<tr><td>{{ event.timestamp|date:"Y-m-d H:i:s" }}</td><td>{{ event.actor_repr|default:"System" }}</td><td>{{ event.action }}</td><td>{{ event.target_repr }}</td><td>{{ event.get_outcome_display }}</td><td>{{ event.ip_address|default:"—" }}</td></tr>{% empty %}<tr><td colspan="6">No audit events found.</td></tr>{% endfor %}</tbody></table></div>
+{% include "partials/pagination.html" %}
+{% endblock %}

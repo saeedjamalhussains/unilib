@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Loans | University Library{% endblock %}
+{% block content %}
+<h1>{% if perms.circulation.view_all_loans %}All loans{% else %}My loans{% endif %}</h1>
+{% if perms.circulation.process_circulation %}
+<p><a class="btn btn-primary" href="{% url 'issue_copy' %}">Issue copy</a> <a class="btn btn-secondary" href="{% url 'return_copy' %}">Return copy</a></p>
+{% endif %}
+<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Title</th><th>Accession</th><th>Member</th><th>Issued</th><th>Due</th><th>Returned</th><th>Action</th></tr></thead>
+<tbody>{% for loan in loans %}<tr>
+<td>{{ loan.copy.book.title }}</td><td>{{ loan.copy.accession_number }}</td><td>{{ loan.member.university_id }}</td><td>{{ loan.issued_at|date:"Y-m-d" }}</td><td>{{ loan.due_date }}</td><td>{{ loan.returned_at|date:"Y-m-d"|default:"—" }}</td>
+<td>{% if not loan.returned_at and not perms.circulation.process_circulation %}<form method="post" action="{% url 'renew_loan' loan.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary">Renew</button></form>{% endif %}</td>
+</tr>{% empty %}<tr><td colspan="7">No loans found.</td></tr>{% endfor %}</tbody></table></div>
+{% include "partials/pagination.html" %}
+{% endblock %}

@@ -1,6 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Dashboard | University Library{% endblock %}
 {% block content %}
-  <h1>University Library</h1>
-  <p class="lead">Sign in to access your library services.</p>
+<h1>Library dashboard</h1>
+<p class="lead">Welcome, {{ request.user.get_full_name|default:request.user.username }}.</p>
+{% if profile %}
+<h2 class="h4">My current loans</h2><div class="table-responsive"><table class="table"><thead><tr><th>Title</th><th>Due date</th></tr></thead><tbody>
+{% for loan in current_loans %}<tr><td>{{ loan.copy.book.title }}</td><td>{{ loan.due_date }}</td></tr>{% empty %}<tr><td colspan="2">No active loans.</td></tr>{% endfor %}
+</tbody></table></div>
+<h2 class="h4">Ready reservations</h2><ul>{% for reservation in ready_reservations %}<li>{{ reservation.book.title }} — collect by {{ reservation.hold_expires_at }}</li>{% empty %}<li>No holds ready for pickup.</li>{% endfor %}</ul>
+<h2 class="h4">Outstanding fines</h2><ul>{% for fine in outstanding_fines %}<li>{{ fine.loan.copy.book.title }} — balance {{ fine.balance }}</li>{% empty %}<li>No outstanding fines.</li>{% endfor %}</ul>
+{% endif %}
+{% if perms.circulation.view_all_loans %}
+<h2 class="h4">Staff overview</h2><h3 class="h5">Due today</h3><ul>{% for loan in due_today %}<li>{{ loan.copy.book.title }} — {{ loan.member.university_id }}</li>{% empty %}<li>No loans due today.</li>{% endfor %}</ul>
+<h3 class="h5">Overdue</h3><ul>{% for loan in overdue_loans %}<li>{{ loan.copy.book.title }} — {{ loan.member.university_id }} (due {{ loan.due_date }})</li>{% empty %}<li>No overdue loans.</li>{% endfor %}</ul>
+<h3 class="h5">Pending reservations</h3><ul>{% for reservation in pending_reservations %}<li>{{ reservation.book.title }} — {{ reservation.member.university_id }}</li>{% empty %}<li>No pending reservations.</li>{% endfor %}</ul>
+{% endif %}
+{% if system_counts %}<h2 class="h4">System counts</h2><dl class="row">{% for label, count in system_counts.items %}<dt class="col-sm-3">{{ label|capfirst }}</dt><dd class="col-sm-9">{{ count }}</dd>{% endfor %}</dl>
+<h2 class="h4">Recent audit events</h2><ul>{% for event in recent_audit_events %}<li>{{ event.timestamp|date:"Y-m-d H:i" }} — {{ event.actor_repr|default:"System" }} — {{ event.action }} — {{ event.target_repr }}</li>{% empty %}<li>No recent events.</li>{% endfor %}</ul>{% endif %}
 {% endblock %}

@@ -15,6 +15,10 @@
       <dt class="col-sm-3">Availability</dt><dd class="col-sm-9">{% if book.available_copies %}<span class="badge text-bg-success">{{ book.available_copies }} available</span>{% else %}<span class="badge text-bg-secondary">Unavailable</span>{% endif %}</dd>
     </dl>
     {% if book.description %}<section aria-labelledby="description-heading"><h2 id="description-heading" class="h4">Description</h2><p>{{ book.description }}</p></section>{% endif %}
+    {% if book.description %}<section aria-labelledby="description-heading"><h2 id="description-heading" class="h4">Description</h2><p>{{ book.description }}</p></section>{% endif %}
+    {% if perms.reservations.place_reservation and not book.available_copies %}
+      <form method="post" action="{% url 'place_reservation_for_book' book.pk %}">{% csrf_token %}<button class="btn btn-outline-primary">Reserve this title</button></form>
+    {% endif %}
   </article>
   {% if perms.catalog.manage_catalog %}
     <a class="btn btn-outline-primary" href="{% url 'catalog:book_update' book.pk %}">Edit title</a>

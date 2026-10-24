@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterable
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 
 from apps.accounts.models import User
@@ -43,6 +43,8 @@ def save_catalog_record(
     categories: Iterable[Category] | None = None,
 ) -> CatalogRecord:
     """Validate and save one catalog record, auditing the before/after state."""
+    if not actor.has_perm("catalog.manage_catalog"):
+        raise PermissionDenied("You are not allowed to manage catalog records.")
     is_new = record.pk is None
     if is_new:
         before = None
@@ -72,6 +74,8 @@ def save_catalog_record(
 @transaction.atomic
 def delete_book(actor: User, book: Book) -> None:
     """Delete a book title only when it has no protected physical copies."""
+    if not actor.has_perm("catalog.delete_book"):
+        raise PermissionDenied("You are not allowed to delete titles.")
     book = Book.objects.select_for_update().get(pk=book.pk)
     if book.copies.exists():
         raise ValidationError("Books with inventory copies cannot be deleted.")
@@ -83,6 +87,8 @@ def delete_book(actor: User, book: Book) -> None:
 @transaction.atomic
 def delete_catalog_record(actor: User, record: Author | Category | Publisher) -> None:
     """Delete an unused author, publisher, or category with an audit event."""
+    if not actor.has_perm("catalog.manage_catalog"):
+        raise PermissionDenied("You are not allowed to manage catalog records.")
     record = type(record).objects.select_for_update().get(pk=record.pk)
     if isinstance(record, Author) and record.books.exists():
         raise ValidationError("Authors linked to books cannot be deleted.")

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Members | University Library{% endblock %}
+{% block content %}
+<h1>Members</h1>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-sm-9"><label class="form-label" for="member-query">Search members</label><input id="member-query" name="q" class="form-control" value="{{ request.GET.q }}"></div>
+  <div class="col-sm-3 align-self-end"><button class="btn btn-primary">Search</button></div>
+</form>
+{% if perms.membership.manage_members %}<a class="btn btn-primary mb-3" href="{% url 'member_create' %}">Register member</a>{% endif %}
+<div class="table-responsive"><table class="table table-striped">
+<thead><tr><th>University ID</th><th>Name</th><th>Type</th><th>Status</th><th>Expiry</th><th>Actions</th></tr></thead>
+<tbody>{% for member in members %}<tr>
+<td>{{ member.university_id }}</td><td>{{ member.user.get_full_name|default:member.user.username }}</td><td>{{ member.get_member_type_display }}</td><td>{{ member.get_status_display }}</td><td>{{ member.membership_expiry }}</td>
+<td>{% if perms.membership.manage_members %}<a href="{% url 'member_edit' member.pk %}">Edit</a>{% endif %}</td>
+</tr>{% empty %}<tr><td colspan="6">No members found.</td></tr>{% endfor %}</tbody></table></div>
+{% include "partials/pagination.html" %}
+{% endblock %}
