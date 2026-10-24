@@ -37,20 +37,6 @@ python manage.py migrate
 python manage.py seed_roles
 ```
 
-To create development-only sample accounts, books, copies, loans, reservations,
-and a fine:
-
-```sh
-python manage.py seed_demo_data
-```
-
-The command refuses to run with `DEBUG=False`. If `DEMO_PASSWORD` is present in
-the environment it is used for accounts created by that run; otherwise a
-cryptographically random password is generated and printed once for each new
-demo account. Existing demo-account passwords are not reset when the command is
-rerun. Demo usernames are `demo_admin`, `demo_librarian`, `demo_faculty`, and
-`demo_student`.
-
 Start the development server:
 
 ```sh
@@ -74,7 +60,6 @@ change their password at `/accounts/password_change/`.
 | `DATABASE_URL` | PostgreSQL connection URL; unset uses SQLite |
 | `SQLITE_PATH` | Optional SQLite database path |
 | `TIME_ZONE` | Django timezone, default `UTC` |
-| `DEMO_PASSWORD` | Optional initial password for demo accounts; do not commit it |
 | `DJANGO_EMAIL_BACKEND` | Email backend for queued notices; defaults to the console backend |
 
 Production uses PostgreSQL when `DATABASE_URL` is set and enables HTTPS redirects,

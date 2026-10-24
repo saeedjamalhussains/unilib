@@ -38,9 +38,6 @@
 - Reports aggregate circulation by book category, so a title assigned to
   multiple categories contributes to each category's count. CSV formula
   prefixes are neutralized before download.
-- Demo data uses four stable usernames. Passwords are provided with
-  `DEMO_PASSWORD` or randomly generated and printed only when each demo account
-  is first created; rerunning the command does not reset existing passwords.
 - Copy loss/damage charging beyond overdue assessment and fine adjustment
   workflows beyond payment and administrator waiver remain future extensions;
   no payment gateway, external notification service, barcode scanner, or SSO

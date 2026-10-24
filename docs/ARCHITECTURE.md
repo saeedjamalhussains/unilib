@@ -69,9 +69,7 @@ production; repeated runs are safe.
 `django-environ` loads environment variables and an optional project-root
 `.env`. `config.settings.dev` selects local development behavior; production
 requires a secret, host allow-list, and configured database. Migrations seed
-default student and faculty policies. Run `seed_roles` after migrations; the
-development-only `seed_demo_data` command is repeatable and never resets
-existing demo-account passwords.
+default student and faculty policies. Run `seed_roles` after migrations.
 
 All domain data is accessed via the Django ORM. PostgreSQL row locks protect
 checkout/payment/hold mutations; SQLite remains suitable for development and

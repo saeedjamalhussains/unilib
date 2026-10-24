@@ -1,14 +1,13 @@
 from datetime import timedelta
 from decimal import Decimal
 from io import StringIO
-from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError, transaction
-from django.test import Client, TestCase, override_settings
+from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -594,41 +593,3 @@ class LoginThrottleTests(TestCase):
         )
         self.assertEqual(response.status_code, 429)
         self.assertTrue(AuditLog.objects.filter(action="auth.login_locked").exists())
-
-
-class DemoDataTests(TestCase):
-    @override_settings(DEBUG=True)
-    def test_demo_seed_is_idempotent_and_keeps_existing_password(self):
-        call_command("seed_roles", stdout=StringIO())
-        with (
-            override_settings(DEBUG=True),
-            patch.dict("os.environ", {"DEMO_PASSWORD": "Demo-Only-Strong-Password-2026"}),
-        ):
-            call_command("seed_demo_data", stdout=StringIO())
-            first_counts = (
-                Book.objects.count(),
-                BookCopy.objects.count(),
-                Loan.objects.count(),
-                Reservation.objects.count(),
-                Fine.objects.count(),
-            )
-            call_command("seed_demo_data", stdout=StringIO())
-        self.assertEqual(
-            first_counts,
-            (
-                Book.objects.count(),
-                BookCopy.objects.count(),
-                Loan.objects.count(),
-                Reservation.objects.count(),
-                Fine.objects.count(),
-            ),
-        )
-        demo_admin = get_user_model().objects.get(username="demo_admin")
-        self.assertTrue(demo_admin.check_password("Demo-Only-Strong-Password-2026"))
-
-    @override_settings(DEBUG=False)
-    def test_demo_seed_refuses_non_debug_settings(self):
-        from django.core.management import CommandError
-
-        with self.assertRaises(CommandError):
-            call_command("seed_demo_data", stdout=StringIO())
