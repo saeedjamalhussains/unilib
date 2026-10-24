@@ -23,6 +23,7 @@ def library_permission_required(perm):
                     outcome="denied",
                     permission=perm,
                 )
+                request._audit_access_denied = True
                 raise PermissionDenied
             return view_func(request, *args, **kwargs)
 

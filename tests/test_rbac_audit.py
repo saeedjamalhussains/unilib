@@ -99,6 +99,33 @@ class RoleMatrixTests(TestCase):
         self.assertEqual(event.outcome, AuditLog.OUTCOME_DENIED)
         self.assertEqual(event.target_repr, reverse("protected"))
 
+    def test_permission_decorator_allows_authorized_users_and_audits_denials(self):
+        administrator = get_user_model().objects.create_user(
+            username="decorator-admin",
+            email="decorator-admin@example.edu",
+            password="long-test-password",
+        )
+        administrator.groups.add(Group.objects.get(name="Administrator"))
+        self.client.force_login(administrator)
+        self.assertEqual(self.client.get(reverse("decorated_protected")).status_code, 200)
+
+        student = get_user_model().objects.create_user(
+            username="decorator-student",
+            email="decorator-student@example.edu",
+            password="long-test-password",
+        )
+        student.groups.add(Group.objects.get(name="Student"))
+        self.client.force_login(student)
+        response = self.client.get(reverse("decorated_protected"))
+
+        self.assertEqual(response.status_code, 403)
+        event = AuditLog.objects.get(
+            action="access.denied",
+            actor=student,
+            target_repr=reverse("decorated_protected"),
+        )
+        self.assertEqual(event.outcome, AuditLog.OUTCOME_DENIED)
+
 
 class AuditLogTests(TestCase):
     def setUp(self):

@@ -11,9 +11,10 @@ production modules. SQLite is the default development database. Set
 
 ## Foundation status
 
-Phase 1 establishes the project, custom user, auth entry points, base template,
-and shared permission mixin. Domain services, role seeding, and audit logging
-are introduced in their corresponding implementation phases.
+Phase 1 establishes the project, custom user, auth entry points, and base
+template. Phase 2 adds role seeding and audit logging. Phase 3 adds secure
+account and role administration. Remaining domain services are added in later
+phases.
 
 ## RBAC and audit core
 
@@ -30,3 +31,14 @@ permission; authenticated denials are audited. The audit API writes append-only
 events, captures request IP/user-agent metadata through middleware, and records
 authentication signals. The Django admin site separately limits entry to
 superusers and members of the `Administrator` group.
+
+## Role administration
+
+The `/manage/users/` interface uses Django's `accounts.manage_users` permission
+for administrators. Librarians use `membership.manage_members` only to create,
+edit, list, and deactivate Faculty and Student accounts; they cannot edit
+privileged accounts or assign roles to existing accounts. `accounts.services`
+is the enforcement boundary for initial role assignment, account changes,
+activation, deactivation, and deletion. Role updates replace any other library
+role group, and final-active-administrator operations are rejected
+transactionally.

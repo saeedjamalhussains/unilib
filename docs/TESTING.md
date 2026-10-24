@@ -13,3 +13,7 @@ Run coverage reporting with:
 coverage run manage.py test
 coverage report
 ```
+
+The suite covers the account-role boundaries, member-account scoping,
+last-active-administrator safeguards, audited account lifecycle changes, and
+role-forgery attempts through the staff interface.

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Deactivate account | University Library{% endblock %}
+{% block content %}
+  <h1>Deactivate account</h1>
+  <p>Are you sure you want to deactivate <strong>{{ account.username }}</strong>? They will no longer be able to sign in.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Confirm deactivation</button>
+    <a class="btn btn-outline-secondary" href="{% url 'manage_user_list' %}">Cancel</a>
+  </form>
+{% endblock %}

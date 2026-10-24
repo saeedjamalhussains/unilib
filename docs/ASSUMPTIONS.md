@@ -12,3 +12,7 @@
   permissions against that app's `rolecapability` content type. This lets
   permissions and groups be seeded from the canonical matrix in Phase 2; later
   domain model permissions can use the same app label/codenames.
+- The role matrix keeps `accounts.manage_users` and `accounts.assign_roles`
+  administrator-only. Librarians' narrower student/faculty account-management
+  access is authorized through `membership.manage_members`; their first role
+  assignment is limited to those member roles during account creation.

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{% if account %}Edit account{% else %}Create account{% endif %} | University Library{% endblock %}
+{% block content %}
+  <h1>{% if account %}Edit account{% else %}Create account{% endif %}</h1>
+  <form method="post" class="row g-3" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="col-12 alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+      <div class="col-12 col-md-8">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="invalid-feedback d-block" id="{{ field.id_for_label }}_error">{{ error }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    <div class="col-12 d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Save account</button>
+      <a class="btn btn-outline-secondary" href="{% url 'manage_user_list' %}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

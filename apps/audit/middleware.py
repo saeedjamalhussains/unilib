@@ -8,6 +8,18 @@ class AuditRequestMiddleware:
     def __call__(self, request):
         token = current_request.set(request)
         try:
-            return self.get_response(request)
+            response = self.get_response(request)
+            if response.status_code == 403 and not getattr(
+                request, "_audit_access_denied", False
+            ):
+                from apps.audit.api import log
+
+                log(
+                    request,
+                    "access.denied",
+                    target=request.path,
+                    outcome="denied",
+                )
+            return response
         finally:
             current_request.reset(token)

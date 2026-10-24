@@ -16,6 +16,9 @@
         <a class="navbar-brand" href="{% url 'home' %}">University Library</a>
         <div class="ms-auto">
           {% if user.is_authenticated %}
+            {% if perms.accounts.manage_users or perms.membership.manage_members %}
+              <a class="btn btn-outline-light me-2" href="{% url 'manage_user_list' %}">Manage users</a>
+            {% endif %}
             <form method="post" action="{% url 'logout' %}" class="d-inline">
               {% csrf_token %}
               <button type="submit" class="btn btn-outline-light">Log out</button>

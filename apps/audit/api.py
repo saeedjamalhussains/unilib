@@ -8,6 +8,9 @@ def log(request_or_none, action, target=None, outcome="success", **metadata):
     """Append one audit event using the active request, if available."""
     request = request_or_none or current_request.get()
     user = getattr(request, "user", None) if request is not None else None
+    if user is None and getattr(request, "is_authenticated", False):
+        user = request
+        request = current_request.get()
     if user is not None and not getattr(user, "is_authenticated", False):
         user = None
 

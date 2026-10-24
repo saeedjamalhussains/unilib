@@ -22,6 +22,7 @@ class LibraryPermissionRequiredMixin(PermissionRequiredMixin):
             outcome="denied",
             permission=self.get_permission_required(),
         )
+        self.request._audit_access_denied = True
         raise PermissionDenied
 
 

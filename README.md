@@ -28,6 +28,10 @@ python manage.py seed_roles
 python manage.py render_rbac_matrix
 ```
 
+Administrators manage all accounts at `/manage/users/`. Librarians can manage
+only student and faculty accounts there; role changes for existing accounts
+are administrator-only.
+
 ## Configuration
 
 Settings default to `config.settings.dev`. Set `DJANGO_SETTINGS_MODULE` to
