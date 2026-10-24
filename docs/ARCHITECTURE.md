@@ -13,8 +13,9 @@ production modules. SQLite is the default development database. Set
 
 Phase 1 establishes the project, custom user, auth entry points, and base
 template. Phase 2 adds role seeding and audit logging. Phase 3 adds secure
-account and role administration. Remaining domain services are added in later
-phases.
+account and role administration. Phase 4 adds catalog and physical inventory
+services and server-rendered management views. Membership and circulation
+services are added in later phases.
 
 ## RBAC and audit core
 
@@ -42,3 +43,13 @@ is the enforcement boundary for initial role assignment, account changes,
 activation, deactivation, and deletion. Role updates replace any other library
 role group, and final-active-administrator operations are rejected
 transactionally.
+
+## Catalog and inventory
+
+`catalog` owns bibliographic titles and their authors, publishers, and
+categories. Search and detail views require `catalog.view_book`; catalog
+maintenance requires `catalog.manage_catalog`, while title deletion requires
+`catalog.delete_book`. `inventory` owns `BookCopy` records; changes go through
+its service layer and require `inventory.manage_copies`. Catalog and copy
+mutations write audit events from their services. A title with copies cannot
+be deleted, and copy-to-book references use `PROTECT`.

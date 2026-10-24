@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Catalog | University Library{% endblock %}
+{% block content %}
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">Library catalog</h1>
+    {% if perms.catalog.manage_catalog %}
+      <a class="btn btn-primary" href="{% url 'catalog:book_create' %}">Add book</a>
+    {% endif %}
+  </div>
+  {% if perms.catalog.manage_catalog %}
+    <nav class="nav nav-pills flex-wrap gap-2 mb-3" aria-label="Catalog reference records">
+      <a class="nav-link" href="{% url 'catalog:reference_list' 'authors' %}">Authors</a>
+      <a class="nav-link" href="{% url 'catalog:reference_list' 'publishers' %}">Publishers</a>
+      <a class="nav-link" href="{% url 'catalog:reference_list' 'categories' %}">Categories</a>
+    </nav>
+  {% endif %}
+  <form method="get" class="row g-2 mb-4" role="search">
+    <div class="col-12 col-md-6">
+      <label class="visually-hidden" for="catalog-q">Search all catalog fields</label>
+      <input class="form-control" id="catalog-q" name="q" value="{{ request.GET.q }}" placeholder="Search title, author, ISBN, or category">
+    </div>
+    <div class="col-6 col-md-3">
+      <label class="visually-hidden" for="catalog-title">Title</label>
+      <input class="form-control" id="catalog-title" name="title" value="{{ request.GET.title }}" placeholder="Title">
+    </div>
+    <div class="col-6 col-md-3">
+      <label class="visually-hidden" for="catalog-author">Author</label>
+      <input class="form-control" id="catalog-author" name="author" value="{{ request.GET.author }}" placeholder="Author">
+    </div>
+    <div class="col-6 col-md-4">
+      <label class="visually-hidden" for="catalog-isbn">ISBN</label>
+      <input class="form-control" id="catalog-isbn" name="isbn" value="{{ request.GET.isbn }}" placeholder="ISBN">
+    </div>
+    <div class="col-6 col-md-4">
+      <label class="visually-hidden" for="catalog-category">Category</label>
+      <input class="form-control" id="catalog-category" name="category" value="{{ request.GET.category }}" placeholder="Category">
+    </div>
+    <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Search</button></div>
+  </form>
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <caption class="visually-hidden">Catalog search results</caption>
+      <thead><tr><th scope="col">Title</th><th scope="col">Author(s)</th><th scope="col">ISBN</th><th scope="col">Availability</th></tr></thead>
+      <tbody>
+        {% for book in books %}
+          <tr>
+            <th scope="row"><a href="{% url 'catalog:book_detail' book.pk %}">{{ book.title }}</a></th>
+            <td>{% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+            <td>{{ book.isbn }}</td>
+            <td>{% if book.available_copies %}<span class="badge text-bg-success">{{ book.available_copies }} available</span>{% else %}<span class="badge text-bg-secondary">Unavailable</span>{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">No matching titles found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+    <nav aria-label="Catalog pages">
+      <ul class="pagination">
+        {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q|urlencode }}&title={{ request.GET.title|urlencode }}&author={{ request.GET.author|urlencode }}&isbn={{ request.GET.isbn|urlencode }}&category={{ request.GET.category|urlencode }}">Previous</a></li>{% endif %}
+        <li class="page-item active" aria-current="page"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q|urlencode }}&title={{ request.GET.title|urlencode }}&author={{ request.GET.author|urlencode }}&isbn={{ request.GET.isbn|urlencode }}&category={{ request.GET.category|urlencode }}">Next</a></li>{% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+{% endblock %}

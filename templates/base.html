@@ -16,6 +16,8 @@
         <a class="navbar-brand" href="{% url 'home' %}">University Library</a>
         <div class="ms-auto">
           {% if user.is_authenticated %}
+            {% if perms.catalog.view_book %}<a class="btn btn-outline-light me-2" href="{% url 'catalog:book_list' %}">Catalog</a>{% endif %}
+            {% if perms.inventory.manage_copies %}<a class="btn btn-outline-light me-2" href="{% url 'copy_list' %}">Inventory</a>{% endif %}
             {% if perms.accounts.manage_users or perms.membership.manage_members %}
               <a class="btn btn-outline-light me-2" href="{% url 'manage_user_list' %}">Manage users</a>
             {% endif %}

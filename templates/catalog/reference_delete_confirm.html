@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ resource_singular|lower }} | University Library{% endblock %}
+{% block content %}
+  <h1>Delete {{ resource_singular|lower }}</h1>
+  <p>Are you sure you want to delete <strong>{{ record }}</strong>? Records linked to books cannot be deleted.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Confirm deletion</button>
+    <a class="btn btn-outline-secondary" href="{% url 'catalog:reference_list' resource %}">Cancel</a>
+  </form>
+{% endblock %}

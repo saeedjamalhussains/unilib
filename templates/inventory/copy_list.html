@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Inventory copies | University Library{% endblock %}
+{% block content %}
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">Physical inventory</h1>
+    <a class="btn btn-primary" href="{% url 'copy_create' %}">Add copy</a>
+  </div>
+  <form method="get" class="row g-2 mb-3" role="search">
+    <div class="col-12 col-md-6">
+      <label class="visually-hidden" for="copy-search">Search copies</label>
+      <input id="copy-search" class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Accession number, title, or ISBN">
+    </div>
+    <div class="col-8 col-md-4">
+      <label class="visually-hidden" for="copy-status">Filter by status</label>
+      <select id="copy-status" class="form-select" name="status">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Filter</button></div>
+  </form>
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <caption class="visually-hidden">Physical inventory copies</caption>
+      <thead><tr><th scope="col">Accession</th><th scope="col">Book</th><th scope="col">Shelf</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead>
+      <tbody>
+        {% for copy in copies %}
+          <tr>
+            <th scope="row">{{ copy.accession_number }}</th>
+            <td><a href="{% url 'catalog:book_detail' copy.book_id %}">{{ copy.book.title }}</a></td>
+            <td>{{ copy.shelf_location }}</td>
+            <td>{{ copy.get_status_display }}</td>
+            <td class="text-nowrap">
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'copy_update' copy.pk %}">Edit</a>
+              <form method="post" action="{% url 'copy_status' copy.pk %}" class="d-inline-flex gap-1">
+                {% csrf_token %}
+                <label class="visually-hidden" for="copy-status-{{ copy.pk }}">New status for {{ copy.accession_number }}</label>
+                <select class="form-select form-select-sm" id="copy-status-{{ copy.pk }}" name="status">
+                  {% for value, label in status_choices %}<option value="{{ value }}" {% if copy.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+                <button class="btn btn-sm btn-outline-secondary" type="submit">Set status</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}<tr><td colspan="5">No copies found.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+    <nav aria-label="Inventory pages"><ul class="pagination">
+      {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q|urlencode }}&status={{ request.GET.status|urlencode }}">Previous</a></li>{% endif %}
+      <li class="page-item active" aria-current="page"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+      {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q|urlencode }}&status={{ request.GET.status|urlencode }}">Next</a></li>{% endif %}
+    </ul></nav>
+  {% endif %}
+{% endblock %}

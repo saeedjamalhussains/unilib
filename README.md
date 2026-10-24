@@ -16,9 +16,14 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-The current foundation has login, logout, password reset/change pages, and the
-custom `accounts.User` model. There are no demo credentials yet because account
+The current implementation includes authentication, role seeding and
+administration, audit logging, catalog search and maintenance, and physical
+inventory management. There are no demo credentials yet because account
 creation is intentionally staff-controlled.
+
+Catalogues are searchable at `/catalog/`; physical copies are managed at
+`/inventory/copies/`. Librarians and administrators manage catalog records and
+copies; all four roles can search and view book availability.
 
 Seed the four role groups and their permissions, then regenerate the matrix
 documentation when changing the canonical role data:

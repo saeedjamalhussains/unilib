@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }} | University Library{% endblock %}
+{% block content %}
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'catalog:book_list' %}">Catalog</a></li><li class="breadcrumb-item active" aria-current="page">{{ book.title }}</li></ol></nav>
+  <article>
+    <h1>{{ book.title }}</h1>
+    {% if book.subtitle %}<p class="lead">{{ book.subtitle }}</p>{% endif %}
+    <dl class="row">
+      <dt class="col-sm-3">Author(s)</dt><dd class="col-sm-9">{% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd>
+      <dt class="col-sm-3">ISBN</dt><dd class="col-sm-9">{{ book.isbn }}</dd>
+      <dt class="col-sm-3">Edition</dt><dd class="col-sm-9">{{ book.edition|default:"—" }}</dd>
+      <dt class="col-sm-3">Publication year</dt><dd class="col-sm-9">{{ book.publication_year|default:"—" }}</dd>
+      <dt class="col-sm-3">Publisher</dt><dd class="col-sm-9">{{ book.publisher.name }}</dd>
+      <dt class="col-sm-3">Category</dt><dd class="col-sm-9">{% for category in book.categories.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd>
+      <dt class="col-sm-3">Availability</dt><dd class="col-sm-9">{% if book.available_copies %}<span class="badge text-bg-success">{{ book.available_copies }} available</span>{% else %}<span class="badge text-bg-secondary">Unavailable</span>{% endif %}</dd>
+    </dl>
+    {% if book.description %}<section aria-labelledby="description-heading"><h2 id="description-heading" class="h4">Description</h2><p>{{ book.description }}</p></section>{% endif %}
+  </article>
+  {% if perms.catalog.manage_catalog %}
+    <a class="btn btn-outline-primary" href="{% url 'catalog:book_update' book.pk %}">Edit title</a>
+  {% endif %}
+  {% if perms.catalog.delete_book %}
+    <a class="btn btn-outline-danger" href="{% url 'catalog:book_delete' book.pk %}">Delete title</a>
+  {% endif %}
+  {% if perms.inventory.manage_copies %}
+    <a class="btn btn-outline-primary" href="{% url 'copy_create' %}?book={{ book.pk }}">Add physical copy</a>
+  {% endif %}
+  {% if perms.inventory.manage_copies %}
+    <h2 class="h4 mt-4">Physical copies</h2>
+    <div class="table-responsive">
+      <table class="table table-sm">
+        <thead><tr><th scope="col">Accession number</th><th scope="col">Shelf location</th><th scope="col">Status</th></tr></thead>
+        <tbody>
+          {% for copy in copy_page %}
+            <tr><th scope="row">{{ copy.accession_number }}</th><td>{{ copy.shelf_location }}</td><td>{{ copy.get_status_display }}</td></tr>
+          {% empty %}<tr><td colspan="3">No physical copies are recorded.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if copy_page and copy_page.paginator.num_pages > 1 %}
+      <nav aria-label="Book copy pages"><ul class="pagination">
+        {% if copy_page.has_previous %}<li class="page-item"><a class="page-link" href="?copies_page={{ copy_page.previous_page_number }}">Previous</a></li>{% endif %}
+        <li class="page-item active" aria-current="page"><span class="page-link">Page {{ copy_page.number }} of {{ copy_page.paginator.num_pages }}</span></li>
+        {% if copy_page.has_next %}<li class="page-item"><a class="page-link" href="?copies_page={{ copy_page.next_page_number }}">Next</a></li>{% endif %}
+      </ul></nav>
+    {% endif %}
+  {% endif %}
+{% endblock %}

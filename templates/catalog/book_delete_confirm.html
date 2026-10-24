@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Delete book | University Library{% endblock %}
+{% block content %}
+  <h1>Delete book title</h1>
+  <p>Delete <strong>{{ book.title }}</strong>? Titles with physical copies cannot be deleted.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Confirm deletion</button>
+    <a class="btn btn-outline-secondary" href="{% url 'catalog:book_detail' book.pk %}">Cancel</a>
+  </form>
+{% endblock %}

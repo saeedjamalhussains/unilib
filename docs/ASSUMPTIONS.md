@@ -16,3 +16,10 @@
   administrator-only. Librarians' narrower student/faculty account-management
   access is authorized through `membership.manage_members`; their first role
   assignment is limited to those member roles during account creation.
+- ISBN input accepts ISBN-10 and ISBN-13 with optional hyphens or spaces and
+  validates the standard check digit. The catalog form stores a normalized,
+  separator-free value.
+- Catalog records referenced by titles and titles referenced by physical
+  copies cannot be deleted; users must retain referenced records.
+- Students and faculty see title availability but not accession numbers or
+  shelf locations; detailed copy records are shown to inventory staff only.
