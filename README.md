@@ -1,5 +1,10 @@
 # University Library Management System
 
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-5.2%20LTS-092E20?logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+
 A secure, server-rendered university library built with Django 5.2 LTS. Django
 groups and permissions enforce the Administrator, Librarian, Faculty, and
 Student roles. Sensitive domain operations are handled by transactional
